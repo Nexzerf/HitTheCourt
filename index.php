@@ -27,12 +27,22 @@ require_once 'config.php';
                 </div>
             </button>
 
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="<?= SITE_URL ?>/pages/courts.php" class="nav-link">Courts</a></li>
-                <li class="nav-item"><a href="<?= SITE_URL ?>/pages/reservations.php" class="nav-link">Reservations</a></li>
-                <li class="nav-item"><a href="<?= SITE_URL ?>/pages/reports.php" class="nav-link">Contact Us</a></li>
-                <li class="nav-item"><a href="<?= SITE_URL ?>/pages/guidebook.php" class="nav-link">Guidebook</a></li>
-            </ul>
+           <ul class="nav-menu">
+    <li class="nav-item"><a href="..." class="nav-link">Courts</a></li>
+    <li class="nav-item"><a href="..." class="nav-link">Reservations</a></li>
+    <li class="nav-item"><a href="..." class="nav-link">Contact Us</a></li>
+    <li class="nav-item"><a href="..." class="nav-link">Guidebook</a></li>
+
+    <!-- เพิ่ม auth ไว้ท้าย nav-menu สำหรับ mobile -->
+    <?php if (!isLoggedIn()): ?>
+    <li class="nav-item nav-item-auth">
+        <a href="<?= SITE_URL ?>/pages/login.php" class="nav-link">Login</a>
+    </li>
+    <li class="nav-item nav-item-auth">
+        <a href="<?= SITE_URL ?>/pages/register.php" class="nav-link nav-link-signup">Sign Up</a>
+    </li>
+    <?php endif; ?>
+</ul>
 
             <div class="nav-auth">
                 <?php if (isLoggedIn()): ?>
@@ -69,9 +79,8 @@ require_once 'config.php';
                             </div>
                         </div>
                     </div>
-                <?php else: ?>
-                    <a href="<?= SITE_URL ?>/pages/login.php" class="btn btn-ghost">Login</a>
-                    <a href="<?= SITE_URL ?>/pages/register.php" class="btn btn-primary">Sign Up</a>
+               <?php else: ?>
+
                 <?php endif; ?>
             </div>
         </div>

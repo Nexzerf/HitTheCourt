@@ -132,6 +132,30 @@ ul { list-style: none; }
     gap: 1rem;
 }
 
+/* Nav Auth Buttons — ปรับสีให้เข้ากับ navbar ขาว */
+.nav-auth .btn-ghost {
+    color: #475569;
+    font-size: 0.875rem;
+    padding: 0.45rem 1rem;
+    border-radius: 50px;
+}
+.nav-auth .btn-ghost:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    opacity: 1;
+}
+
+.nav-auth .btn-primary {
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.875rem;
+    padding: 0.45rem 1.1rem;
+    border-radius: 50px;
+}
+.nav-auth .btn-primary:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
 /* =========================================
    User Menu Dropdown
    ========================================= */
@@ -441,68 +465,61 @@ ul { list-style: none; }
     color: rgba(255,255,255,0.5);
 }
 
-/* =========================================
-   MOBILE LAYOUT
-   ========================================= */
 @media (max-width: 768px) {
 
     .mobile-toggle { display: flex; }
 
-    /* Navbar: logo ซ้าย | auth กลาง | hamburger ขวา */
+    /* Navbar — แค่ logo ซ้าย hamburger ขวา */
     .navbar-container {
-        height: 70px;
-        position: relative;
+        height: 64px;
+        padding: 0 1rem;
         justify-content: space-between;
+        position: relative;
     }
 
-    /* auth วางกึ่งกลาง */
-    .nav-auth {
+    .navbar-logo { font-size: 1.2rem; }
+
+    /* ── ซ่อน auth desktop บน mobile ── */
+    .nav-auth { display: none; }
+
+    /* user menu ถ้า login แล้ว ยังโชว์ avatar */
+    .nav-auth:has(.user-menu) {
+        display: flex;
         position: absolute;
-        left: 50%;
+        right: 60px;   /* ซ้ายของ hamburger */
         top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1002;
+        transform: translateY(-50%);
     }
 
-    /* User button: แค่ avatar */
     .user-btn {
-        background: transparent;
         padding: 0.2rem;
-        width: auto; height: auto;
         gap: 0;
+        background: transparent;
     }
-    .user-btn > span { display: none; }
-    .user-btn > svg  { display: none; }
-    .user-avatar { width: 34px; height: 34px; font-size: 0.85rem; }
-
-    /* User dropdown — popup เล็กๆ ใต้ avatar */
-    .user-menu { position: relative; }
+    .user-btn > span,
+    .user-btn > svg { display: none; }
+    .user-avatar    { width: 32px; height: 32px; font-size: 0.8rem; }
 
     .user-dropdown {
         position: absolute;
-        top: calc(100% + 10px);
-        right: -0.5rem;
-        left: auto;
-        width: 220px;
-        border-radius: var(--radius);
-        z-index: 1005;
+        top: calc(100% + 8px);
+        right: 0; left: auto;
+        width: 210px;
     }
-    .user-menu:hover .user-dropdown { opacity: 0; visibility: hidden; transform: translateY(10px); }
+    .user-menu:hover .user-dropdown { opacity: 0; visibility: hidden; }
     .user-menu.active .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
 
-    /* ── Nav Menu Overlay ── */
+    /* ── Nav Overlay ── */
     .nav-menu {
         display: flex !important;
         position: fixed;
-        top: 70px; left: 0; right: 0; bottom: 0;
-        height: calc(100dvh - 70px);
-        background: #ffffff;   /* ← สีเข้มให้เข้ากับ theme */
+        top: 64px; left: 0; right: 0;
+        height: calc(100dvh - 64px);
+        background: #ffffff;
         flex-direction: column;
         align-items: stretch;
-        padding: 0;
-        gap: 0;
+        padding: 0; gap: 0;
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         clip-path: inset(0 0 0 100%);
         transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1001;
@@ -511,12 +528,9 @@ ul { list-style: none; }
 
     .navbar-home.menu-open .nav-menu { clip-path: inset(0 0 0 0%); }
 
-    /* Nav Items */
     .nav-item {
-        width: 100%;
-        height: auto !important;
         display: block !important;
-        border-bottom: 1px solid #f1f5f9; 
+        border-bottom: 1px solid #f1f5f9;
         padding: 0 1.75rem;
         opacity: 0;
         transform: translateX(20px);
@@ -524,52 +538,93 @@ ul { list-style: none; }
     }
 
     .navbar-home.menu-open .nav-item              { opacity: 1; transform: translateX(0); }
-    .navbar-home.menu-open .nav-item:nth-child(1) { transition-delay: 0.12s; }
-    .navbar-home.menu-open .nav-item:nth-child(2) { transition-delay: 0.18s; }
-    .navbar-home.menu-open .nav-item:nth-child(3) { transition-delay: 0.24s; }
-    .navbar-home.menu-open .nav-item:nth-child(4) { transition-delay: 0.30s; }
+    .navbar-home.menu-open .nav-item:nth-child(1) { transition-delay: 0.10s; }
+    .navbar-home.menu-open .nav-item:nth-child(2) { transition-delay: 0.16s; }
+    .navbar-home.menu-open .nav-item:nth-child(3) { transition-delay: 0.22s; }
+    .navbar-home.menu-open .nav-item:nth-child(4) { transition-delay: 0.28s; }
+    .navbar-home.menu-open .nav-item:nth-child(5) { transition-delay: 0.34s; }
+    .navbar-home.menu-open .nav-item:nth-child(6) { transition-delay: 0.40s; }
     .navbar-home:not(.menu-open) .nav-item        { transition-delay: 0s !important; }
 
-    /* Nav Links */
     .nav-link {
         display: flex;
         align-items: center;
-        width: 100%;
         padding: 1.1rem 0;
         font-size: 1rem;
         font-weight: 600;
-        color: #0f172a; 
+        color: #0f172a;
         background: none;
-        border-radius: 0;
-        transition: color 0.2s ease, padding-left 0.2s ease;
     }
-    .nav-link::after { display: none; } /* ซ่อน underline effect ใน overlay */
-      .nav-link:hover { color: #2563eb; }
+    .nav-link::after { display: none; }
+    .nav-link:hover  { color: #2563eb; }
 
-    /* Hero buttons */
-    .hero-buttons { margin-top: 200px; flex-direction: column; }
-    .hero-buttons .btn { width: 100%; justify-content: center; }
+    /* ── Auth items ใน menu — style พิเศษ ── */
+    .nav-item-auth {
+        /* เส้นบนเพื่อแบ่งกลุ่ม */
+        border-top: none;
+    }
 
-    /* About */
-    #about .container { padding: 2rem; }
+    /* Login — เหมือน nav-link ปกติ */
+    .nav-item-auth .nav-link {
+        color: #475569;
+        font-weight: 500;
+    }
 
-    /* Services */
-    .services-grid { grid-template-columns: 1fr; }
+    /* Sign Up — ไฮไลต์ */
+    .nav-link-signup {
+        color: #2563eb !important;
+        font-weight: 700 !important;
+    }
 
-    /* Facilities */
-    .stats-grid { gap: 1.5rem; }
+    /* เส้นแบ่งก่อน auth items */
+    .nav-item-auth:first-of-type {
+        border-top: 2px solid #f1f5f9;
+        margin-top: 0.5rem;
+    }
 
-    /* Footer */
-    .footer-grid { grid-template-columns: 1fr; text-align: center; }
-    .footer-links a { justify-content: center; }
-    .footer { border-radius: 20px 20px 0 0; }
-}
+    /* ── Hero ── */
+    .hero {
+        padding-top: 0;
+        margin-top: 64px;
+        min-height: calc(100dvh - 64px);
+        clip-path: polygon(0 0, 100% 0, 100% 94%, 0 100%);
+        padding-bottom: 3rem;
+        align-items: flex-end;
+    }
 
-@media (max-width: 992px) {
-    .services-grid { grid-template-columns: 1fr; }
-    .hero-text h1  { font-size: 3rem; }
-}
+    .hero-content {
+        width: 100%;
+        padding: 0 1.25rem;
+        justify-content: flex-end;
+    }
 
-@media (hover: none) {
-    .mobile-toggle:active { background: rgba(255,255,255,0.1); }
+    .hero-buttons {
+        margin-top: 0;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    /* ── Sections ── */
+    #about              { margin-top: -40px; }
+    #about .container   { padding: 2rem 1.5rem; }
+    .section-header h2  { font-size: 1.75rem; }
+    .about-highlight    { font-size: 1.2rem; }
+    .services-grid      { grid-template-columns: 1fr; }
+    #services           { padding-top: 4rem; }
+    .stats-grid         { gap: 1.25rem; }
+    .stat-item          { width: 120px; }
+    .stat-icon          { width: 72px; height: 72px; }
+    .stat-icon svg      { width: 32px; height: 32px; }
+    .footer-grid        { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+    .footer-links a     { justify-content: center; }
+    .footer             { border-radius: 20px 20px 0 0; }
 }
