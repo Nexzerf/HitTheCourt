@@ -302,15 +302,93 @@
 .sport-card:nth-child(6) { animation-delay: 0.6s; }
 .sport-card:nth-child(7) { animation-delay: 0.7s; }
 
-/* Responsive */
+/* =========================================
+   RESPONSIVE — COURTS PAGE
+   ========================================= */
+
 @media (max-width: 1024px) {
     .courts-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
 }
 
 @media (max-width: 768px) {
-    .page-hero h1 { font-size: 2rem; }
-    .courts-grid { grid-template-columns: 1fr; }
-    .sport-card-image { height: 200px; }
+
+    /* Hero */
+    .main-content  { padding-top: 80px; }
+
+    .page-hero {
+        padding: 3rem 1.25rem;
+        border-bottom-left-radius: 1.5rem;
+        border-bottom-right-radius: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-hero h1  { font-size: 2rem; letter-spacing: -0.01em; }
+    .page-hero p   { font-size: 1rem; }
+
+    /* Courts grid — single column */
+    .courts-section { padding: 0 1rem 3rem; }
+    .courts-grid    { grid-template-columns: 1fr; gap: 1.25rem; }
+
+    /* Card */
+    .sport-card:hover {
+        /* ยกเลิก hover effect บน touch เพราะทำให้ layout กระตุก */
+        transform: none;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .sport-card-image { height: 180px; }
+
+    .sport-card-content { padding: 1.25rem; }
+
+    .sport-title { font-size: 1.2rem; }
+
+    /* Details row — wrap ได้ */
+    .sport-details {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .detail-item {
+        flex: 1 1 calc(50% - 0.25rem);  /* 2 คอลัมน์ */
+        min-width: 0;
+        font-size: 0.8rem;
+        padding: 0.45rem 0.5rem;
+    }
+
+    /* Book button */
+    .btn-book { padding: 0.9rem; font-size: 0.9rem; }
+}
+
+@media (max-width: 480px) {
+
+    .page-hero h1  { font-size: 1.6rem; }
+
+    /* Card image เล็กลงอีกนิด */
+    .sport-card-image { height: 160px; }
+
+    /* Details — 1 คอลัมน์ถ้าจอเล็กมาก */
+    .detail-item { flex: 1 1 100%; }
+
+    /* Price box ย่อลง */
+    .sport-price h3   { font-size: 1rem; }
+    .sport-price span { font-size: 0.65rem; }
+
+    /* Animation ช้าลงนิดเดียวบน low-end device */
+    .sport-card { animation-duration: 0.4s; }
+}
+
+/* Touch device: ปิด hover transform ทั้งหมด */
+@media (hover: none) {
+    .sport-card:hover          { transform: none; box-shadow: var(--shadow-soft); }
+    .sport-card:hover .sport-card-image img { transform: none; filter: brightness(0.95); }
+    .btn-book:hover            { transform: none; }
+    .btn-book:hover svg        { transform: none; }
+
+    /* Tap feedback แทน */
+    .sport-card:active  { transform: scale(0.98); }
+    .btn-book:active    { opacity: 0.85; }
 }

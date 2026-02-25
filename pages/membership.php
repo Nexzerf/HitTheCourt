@@ -1,150 +1,180 @@
 <?php
+// อันดับแรกเลย ดึงไฟล์ config.php มาเพื่อเชื่อมฐานข้อมูลและใช้ฟังก์ชันต่างๆ
 require_once '../config.php';
+// เช็คทันทีว่าล็อกอินแล้วยัง? ถ้ายังไม่ล็อกอินก็ไม่ให้เข้าหน้านี้
 requireLogin();
 
+// ดึงข้อมูล "ฉัน" (User ที่ล็อกอินอยู่) จากฐานข้อมูลมาเก็บไว้ในตัวแปร $user
  $userStmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
  $userStmt->execute([$_SESSION['user_id']]);
  $user = $userStmt->fetch();
 
+ // ดึงข้อมูลแพ็กเกจสมาชิก (Plan) ที่ยังเปิดให้บริการอยู่ (status = active) ออกมาแสดง จำกัดไว้ 1 แพ็กเกจนะ
  $planStmt = $pdo->query("SELECT * FROM membership_plans WHERE status = 'active' LIMIT 1");
  $plan = $planStmt->fetch();
 
+ // เตรียมตัวแปรไว้เก็บ Error ต่างๆ
  $errors = [];
 
+ // ถ้า URL มีคำว่า ?success ต่อท้ายมา (แสดงว่าเพิ่งจ่ายเงินเสร็จ) ก็ให้ขึ้นข้อความดีใจให้ User
  if (isset($_GET['success'])) {
     $success_msg = "Payment successful! Your membership is now active.";
 }
 // Handle Purchase Request
+// ส่วนนี้คือจัดการตอนที่ User กดปุ่ม "ซื้อแพ็กเกจ" (Method POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
+    // เช็คก่อนว่า "เป็นสมาชิกอยู่แล้วไหม?" ถ้าใช่และยังไม่หมดอายุ ก็แจ้งเตือนว่า "คุณมีแล้วนะ"
     if ($user['is_member'] && $user['member_expire'] > date('Y-m-d')) {
         $errors['general'] = 'You already have an active membership.';
     } else {
+        // ถ้ายังไม่มี ก็เริ่มคำนวณวันที่
+        // วันเริ่มต้นคือวันนี้
         $startDate = date('Y-m-d');
+        // วันสิ้นสุดคือ เอาเดือนของแพ็กเกจมาบวกเพิ่มไป
         $endDate = date('Y-m-d', strtotime('+' . $plan['duration_months'] . ' months'));
         
         try {
             // Insert Order
+            // บันทึกข้อมูลการสมัครลงตาราง user_membership สถานะตอนนี้คือ 'pending' (รอจ่ายเงิน)
             $stmt = $pdo->prepare("INSERT INTO user_membership (user_id, plan_id, start_date, end_date, total_price, payment_status) VALUES (?, ?, ?, ?, ?, 'pending')");
             $stmt->execute([$_SESSION['user_id'], $plan['plan_id'], $startDate, $endDate, $plan['price']]);
             
+            // ดึง ID ล่าสุดที่เพิ่งบันทึกไปมาใช้
             $membershipId = $pdo->lastInsertId();
             
             // แก้ไขตรงนี้: เอา SITE_URL ออก
+            // พอสร้างออเดอร์แล้ว ก็ส่ง User ไปหน้าจ่ายเงินทันที พร้อมส่ง ID ไปด้วย
             redirect('/pages/membership_payment.php?id=' . $membershipId);
             
         } catch (PDOException $e) {
+            // ถ้าฐานข้อมูลมีปัญหา ก็แจ้ง Error
             $errors['general'] = 'Database Error: ' . $e->getMessage();
         }
     }
 }
 ?>
 <!DOCTYPE html>
+<!-- ตรงนี้เริ่มส่วนของหน้าตาเว็บไซต์ (HTML) -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ตั้งชื่อหน้าเว็บ -->
     <title>Membership - Hit The Court</title>
+    <!-- โหลด Font สวยๆ -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- โหลดไฟล์ CSS สำหรับแต่งหน้านี้ -->
     <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/home.css">
     <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/membership.css">
 </head>
 <body>
 
- <!-- NAVBAR -->
-<nav class="navbar-home" id="navbar">
-    <div class="navbar-container">
-        <a href="index.php" class="navbar-logo">HIT THE <span>COURT</span></a>
-        
-        <!-- Hamburger Button (Added) -->
-        <button class="hamburger" id="hamburger-btn" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-
-        <!-- Menu with Dropdown -->
-        <ul class="nav-menu" id="nav-menu"> <!-- เพิ่ม ID เข้าไป -->
+  <!-- NAVBAR -->
+    <!-- ส่วนของเมนูด้านบน (เหมือนหน้า Home ทุกอย่าง) -->
+    <nav class="navbar-home" id="navbar">
+        <div class="navbar-container">
+            <a href="index.php" class="navbar-logo">HIT THE <span>COURT</span></a>
+                <button class="mobile-toggle" aria-label="Toggle menu">
+                    <div class="hamburger-box">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </button>
             
-            <li class="nav-item">
-                <a href="<?= SITE_URL ?>/pages/courts.php" class="nav-link">Courts</a>
-            </li>
+            <!-- Menu with Dropdown -->
+            <ul class="nav-menu">
+                <!-- Courts Dropdown -->
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/courts.php" class="nav-link">
+                        Courts
+                    </a>
+                    
+                </li>
 
-            <li class="nav-item">
-                <a href="<?= SITE_URL ?>/pages/reservations.php" class="nav-link">Reservations</a>
-            </li>
-            <li class="nav-item">
-                <a href="<?= SITE_URL ?>/pages/reports.php" class="nav-link">Contact Us</a>
-            </li>
-            <li class="nav-item">
-                <a href="<?= SITE_URL ?>/pages/guidebook.php" class="nav-link">Guidebook</a>
-            </li>
-        </ul>
-        
-        <!-- User Actions -->
-        <div class="nav-auth">
-            <?php if (isLoggedIn()): ?>
-                <div class="user-menu">
-                    <button class="user-btn">
-                        <div class="user-avatar">
-                            <?= strtoupper(substr($_SESSION['username'], 0, 1)) ?>
-                        </div>
-                        <span class="username-text"><?= htmlspecialchars($_SESSION['username']) ?></span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
-                    <div class="user-dropdown">
-                        <div style="padding: 1rem; border-bottom: 1px solid var(--gray-200);">
-                            <small style="color: var(--gray-500);">Signed in as</small>
-                            <p style="font-weight: 600;"><?= htmlspecialchars($_SESSION['username']) ?></p>
-                        </div>
-                        <div style="padding: 0.5rem;">
-                            <a href="<?= SITE_URL ?>/pages/reservations.php" class="dropdown-link">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                My Bookings
-                            </a>
-                             <a href="<?= SITE_URL ?>/pages/profile.php" class="dropdown-link">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                My Profile
-                            </a>
-                              <a href="<?= SITE_URL ?>/pages/membership.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 3h12l3 6-9 12L3 9l3-6z"></path>
-                                        <path d="M3 9h18"></path>
-                                        <path d="M9 3l3 6 3-6"></path>
-                                    </svg>
-                                    Membership
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/reservations.php" class="nav-link">Reservations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/reports.php" class="nav-link">Contact Us</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/guidebook.php" class="nav-link">Guidebook</a>
+                </li>
+            </ul>
+            
+            <!-- User Actions -->
+            <!-- ส่วนแสดงข้อมูลผู้ใช้ด้านขวาบน -->
+            <div class="nav-auth">
+                <?php if (isLoggedIn()): ?>
+                    <!-- ถ้าล็อกอินแล้ว จะแสดงเมนู User (รูปโปรไฟล์, ชื่อ, Dropdown) -->
+                    <div class="user-menu">
+                        <button class="user-btn">
+                            <div class="user-avatar">
+                                <?= strtoupper(substr($_SESSION['username'], 0, 1)) ?>
+                            </div>
+                            <span><?= htmlspecialchars($_SESSION['username']) ?></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="user-dropdown">
+                            <div style="padding: 1rem; border-bottom: 1px solid var(--gray-200);">
+                                <small style="color: var(--gray-500);">Signed in as</small>
+                                <p style="font-weight: 600;"><?= htmlspecialchars($_SESSION['username']) ?></p>
+                            </div>
+                            <div style="padding: 0.5rem;">
+                                <a href="<?= SITE_URL ?>/pages/reservations.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    My Bookings
                                 </a>
-                            <div style="border-top: 1px solid var(--gray-200); margin-top: 0.5rem; padding-top: 0.5rem;">
-                                <a href="<?= SITE_URL ?>/api/auth.php?action=logout" class="dropdown-link" style="color: var(--error);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                    Logout
+                                 <a href="<?= SITE_URL ?>/pages/profile.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    My Profile
                                 </a>
+                                    <a href="<?= SITE_URL ?>/pages/membership.php" class="dropdown-link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 3h12l3 6-9 12L3 9l3-6z"></path>
+                                            <path d="M3 9h18"></path>
+                                            <path d="M9 3l3 6 3-6"></path>
+                                        </svg>
+                                        Membership
+                                    </a>
+                                <div style="border-top: 1px solid var(--gray-200); margin-top: 0.5rem; padding-top: 0.5rem;">
+                                    <a href="<?= SITE_URL ?>/api/auth.php?action=logout" class="dropdown-link" style="color: var(--error);">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                        Logout
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <a href="<?= SITE_URL ?>/pages/login.php" class="btn btn-ghost">Login</a>
-                <a href="<?= SITE_URL ?>/pages/register.php" class="btn btn-primary">Sign Up</a>
-            <?php endif; ?>
+                <?php else: ?>
+                    <!-- ถ้ายังไม่ได้ล็อกอิน ก็แสดงปุ่ม Login/Sign Up ธรรมดา -->
+                    <a href="<?= SITE_URL ?>/pages/login.php" class="btn btn-ghost">Login</a>
+                    <a href="<?= SITE_URL ?>/pages/register.php" class="btn btn-primary">Sign Up</a>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
 
     <div class="membership-page">
         <!-- Hero -->
+        <!-- ส่วนหัวข้อใหญ่ของหน้านี้ -->
         <section class="membership-hero">
             <h1>Unlock Your Full Potential</h1>
             <p>Get exclusive benefits, discounts, and priority booking.</p>
         </section>
 
         <!-- Content -->
+        <!-- ส่วนเนื้อหาหลัก -->
         <div class="plan-container">
             
             <!-- Left -->
+            <!-- ฝั่งซ้าย: แสดงรายละเอียดแพ็กเกจ -->
             <div>
                 <?php if ($user['is_member'] && $user['member_expire'] > date('Y-m-d')): ?>
+                <!-- ถ้า User เป็นสมาชิกอยู่แล้ว จะขึ้นกล่องสีเขียวบอกว่า "คุณเป็น Premium แล้ว" พร้อมวันหมดอายุ -->
                 <div class="active-member-alert">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     <div>
@@ -155,22 +185,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                 <?php endif; ?>
 
                 <?php if (isset($errors['general'])): ?>
+                <!-- ถ้ามี Error อะไรก็แสดงตรงนี้ -->
                 <div class="active-member-alert" style="background: #FEF2F2; border-color: #FECACA; color: #991B1B;">
                     <?= $errors['general'] ?>
                 </div>
                 <?php endif; ?>
 
                 <?php if ($plan): ?>
+                <!-- การ์ดรายละเอียดแพ็กเกจ Premium -->
                 <div class="premium-card">
                     <div class="premium-header">
                         <div class="premium-badge">Best Value</div>
                         <h2 class="premium-title"><?= htmlspecialchars($plan['plan_name']) ?></h2>
+                        <!-- แสดงราคาและระยะเวลา -->
                         <p class="premium-price">
                             <?= number_format($plan['price']) ?>
                             <span>THB / <?= $plan['duration_months'] ?> Months</span>
                         </p>
                     </div>
                     <div class="premium-body">
+                        <!-- ลิสต์สิทธิประโยชน์ต่างๆ -->
                         <ul class="feature-list">
                             <li>
                                 <div class="feature-icon">✓</div>
@@ -190,7 +224,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                             </li>
                         </ul>
 
+                        <!-- ปุ่มกดซื้อ -->
                         <form method="POST" action="">
+                            <!-- ถ้าเป็นสมาชิกแล้วก็จะ Disabled ปุ่มไว้ -->
                             <button type="submit" class="btn-get-premium" <?= ($user['is_member'] && $user['member_expire'] > date('Y-m-d')) ? 'disabled' : '' ?>>
                                 <?php if ($user['is_member'] && $user['member_expire'] > date('Y-m-d')): ?>
                                     Already Active
@@ -205,6 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
             </div>
 
             <!-- Right -->
+            <!-- ฝั่งขวา: ตารางเปรียบเทียบ "Normal vs Premium" -->
             <div class="comparison-card">
                 <div class="comparison-header">
                     <h3>Why Go Premium?</h3>
@@ -218,21 +255,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- เปรียบเทียบการจองล่วงหน้า -->
                         <tr>
                             <td>Advance Booking</td>
                             <td style="text-align: center;">2 Days</td>
                             <td style="text-align: center;" class="highlight-text">7 Days</td>
                         </tr>
+                        <!-- เปรียบเทียบจำนวนสล็อตที่จองได้ -->
                         <tr>
                             <td>Slots per Booking</td>
                             <td style="text-align: center;">1 Slot</td>
                             <td style="text-align: center;" class="highlight-text">Unlimited</td>
                         </tr>
+                        <!-- เปรียบเทียบส่วนลด -->
                         <tr>
                             <td>Special Discounts</td>
                             <td style="text-align: center;">-</td>
                             <td style="text-align: center;" class="highlight-text">Up to 30%</td>
                         </tr>
+                        <!-- เปรียบเทียบอุปกรณ์ฟรี -->
                         <tr>
                             <td>Free Equipment</td>
                             <td style="text-align: center;">-</td>
@@ -244,9 +285,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
 
         </div>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.mobile-toggle');
+    const navbar = document.getElementById('navbar');
+    const body = document.body;
 
+    // Toggle Mobile Menu
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            navbar.classList.toggle('menu-open');
+            
+            // Toggle Icon (Hamburger to Close)
+            const icon = this.querySelector('svg');
+            if (navbar.classList.contains('menu-open')) {
+                icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'; // X icon
+                body.style.overflow = 'hidden'; // Prevent scroll
+            } else {
+                icon.innerHTML = '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>'; // Hamburger icon
+                body.style.overflow = ''; // Enable scroll
+            }
+        });
+    }
+
+    // Handle Mobile Dropdowns (Click to open)
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const link = item.querySelector('.nav-link');
+        const dropdown = item.querySelector('.dropdown-menu');
+        
+        if (dropdown && window.innerWidth <= 768) {
+            link.addEventListener('click', function(e) {
+                if (navbar.classList.contains('menu-open')) {
+                     e.preventDefault(); // Prevent link jump
+                     item.classList.toggle('mobile-sub-open');
+                }
+            });
+        }
+    });
+
+    // Handle User Menu Click on Mobile
+    const userMenu = document.querySelector('.user-menu');
+    if (userMenu) {
+        const userBtn = userMenu.querySelector('.user-btn');
+        userBtn.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.stopPropagation();
+                userMenu.classList.toggle('active');
+            }
+        });
+    }
+    
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.mobile-toggle');
+    const navbar = document.getElementById('navbar');
+    const body = document.body;
+    const userMenu = document.querySelector('.user-menu');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navbar.classList.toggle('menu-open');
+            body.style.overflow = navbar.classList.contains('menu-open') ? 'hidden' : '';
+        });
+    }
+
+    if (userMenu) {
+        userMenu.querySelector('.user-btn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            userMenu.classList.toggle('active');
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (navbar?.classList.contains('menu-open') && !navbar.contains(e.target)) {
+            navbar.classList.remove('menu-open');
+            body.style.overflow = '';
+        }
+        if (userMenu?.classList.contains('active') && !userMenu.contains(e.target)) {
+            userMenu.classList.remove('active');
+        }
+    });
+});
+});
+</script>
 </body>
  <!-- FOOTER -->
+ <!-- ส่วนท้ายเว็บไซต์ -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -259,6 +384,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                     </p>
                 </div>
                 
+                <!-- ลิงก์เมนูด้านล่าง -->
                 <div class="footer-links">
                     <h4>Menu</h4>
                     <ul>
@@ -269,6 +395,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                     </ul>
                 </div>
                 
+                <!-- ข้อมูลติดต่อ -->
                 <div class="footer-links">
                     <h4>Contact Us</h4>
                     <ul>
@@ -292,26 +419,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $plan) {
                 <p>HIT THE COURT</p>
             </div>
         </div>
-    </footer>
-     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-    const hamburger = document.getElementById('hamburger-btn');
-    const navMenu = document.getElementById('nav-menu');
+                                </footer>
 
-    if (hamburger && navMenu) {
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
-        });
-    }
-
-    // ปิดเมนูเมื่อคลิกข้างนอก (Optional)
-    document.addEventListener('click', (e) => {
-        if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-        }
-    });
-});
-</script>
 </html>
