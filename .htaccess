@@ -1,0 +1,46 @@
+# เปิด Rewrite
+RewriteEngine On
+
+# -----------------------------
+# Security
+# -----------------------------
+
+# ปิด directory listing
+Options -Indexes
+
+# ป้องกันการเข้าถึงไฟล์ซ่อน (.env .git ฯลฯ)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ป้องกันไฟล์สำคัญ
+<FilesMatch "(config\.php|schema\.sql|seed\.sql)">
+    Require all denied
+</FilesMatch>
+
+# -----------------------------
+# PHP upload (ปรับได้ตามต้องการ)
+# -----------------------------
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+
+# -----------------------------
+# Rewrite Rules (สำคัญมาก)
+# -----------------------------
+
+# ถ้าเป็นไฟล์จริง หรือโฟลเดอร์จริง -> ไม่ต้อง rewrite
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ไม่ rewrite assets (css, js, images, fonts)
+RewriteRule ^assets/ - [L]
+
+# Routing เข้า index.php
+RewriteRule ^ index.php [L]
+
+# -----------------------------
+# Error Page
+# -----------------------------
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php

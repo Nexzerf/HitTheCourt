@@ -1,0 +1,298 @@
+/* ===================================
+   HIT THE COURT - Auth Pages CSS
+   Design: Split Screen Modern
+   =================================== */
+
+/* CSS Variables */
+:root {
+    --primary: #0066FF;
+    --primary-dark: #0052CC;
+    --secondary: #0F172A;
+    --white: #FFFFFF;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-400: #94A3B8;
+    --gray-600: #475569;
+    --error: #EF4444;
+    
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+/* Reset for Auth Pages */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--white);
+    color: var(--secondary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ===================================
+   SPLIT LAYOUT STRUCTURE
+   =================================== */
+.auth-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Hero Section (Left or Right side) */
+.auth-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--primary); /* Fallback */
+    color: var(--white);
+}
+
+.auth-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 102, 255, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+    z-index: 1;
+}
+
+.auth-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 480px;
+    text-align: center;
+}
+
+.auth-hero-logo {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.auth-hero-logo span {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+
+.auth-hero-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+.auth-hero-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+/* Tennis Court Background Image */
+.auth-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* Form Section */
+.auth-form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background-color: var(--white);
+    position: relative;
+}
+
+.auth-form-box {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-header {
+    margin-bottom: 2.5rem;
+}
+
+.auth-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    font-size: 1rem;
+    color: var(--gray-600);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--secondary);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--secondary);
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--gray-400);
+}
+
+.form-input.error {
+    border-color: var(--error);
+    background-color: #FFF0F0;
+}
+
+.form-error {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--error);
+}
+
+/* Buttons */
+.btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+/* Footer Links */
+.auth-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9375rem;
+    color: var(--gray-600);
+}
+
+.auth-footer a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Error Toast */
+.alert-error {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
+    text-align: center;
+    border: 1px solid #FECACA;
+}
+
+.alert-success {
+    background-color: #DCFCE7;
+    color: #166534;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
+    text-align: center;
+    border: 1px solid #BBF7D0;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .auth-wrapper {
+        flex-direction: column;
+    }
+    
+    .auth-hero {
+        padding: 4rem 2rem;
+        min-height: auto;
+        order: 1; /* Show hero first on mobile or hide */
+        display: none; /* Option: Hide hero on mobile for simplicity */
+    }
+    
+    .auth-form-container {
+        padding: 2rem;
+        order: 2;
+    }
+    
+    /* If showing hero on mobile */
+    /* 
+    .auth-hero-title { font-size: 2rem; }
+    .auth-hero-logo { font-size: 2rem; } 
+    */
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-form-box {
+    animation: fadeIn 0.5s ease forwards;
+}
