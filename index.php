@@ -13,65 +13,77 @@ require_once 'config.php';
 </head>
 <body>
 
-    <!-- NAVBAR -->
+ <!-- NAVBAR -->
+    <!-- ส่วนของเมนูด้านบน (เหมือนหน้า Home ทุกอย่าง) -->
     <nav class="navbar-home" id="navbar">
         <div class="navbar-container">
             <a href="index.php" class="navbar-logo">HIT THE <span>COURT</span></a>
+                <button class="mobile-toggle" aria-label="Toggle menu">
+                    <div class="hamburger-box">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </button>
+            
+            <!-- Menu with Dropdown -->
+            <ul class="nav-menu">
+                <!-- Courts Dropdown -->
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/courts.php" class="nav-link">
+                        Courts
+                    </a>
+                    
+                </li>
 
-            <!-- Hamburger Button (mobile only) -->
-            <button class="mobile-toggle" aria-label="Toggle menu">
-                <div class="hamburger-box">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </button>
-
-           <ul class="nav-menu">
-    <li class="nav-item"><a href="..." class="nav-link">Courts</a></li>
-    <li class="nav-item"><a href="..." class="nav-link">Reservations</a></li>
-    <li class="nav-item"><a href="..." class="nav-link">Contact Us</a></li>
-    <li class="nav-item"><a href="..." class="nav-link">Guidebook</a></li>
-
-    <!-- เพิ่ม auth ไว้ท้าย nav-menu สำหรับ mobile -->
-    <?php if (!isLoggedIn()): ?>
-    <li class="nav-item nav-item-auth">
-        <a href="<?= SITE_URL ?>/pages/login.php" class="nav-link">Login</a>
-    </li>
-    <li class="nav-item nav-item-auth">
-        <a href="<?= SITE_URL ?>/pages/register.php" class="nav-link nav-link-signup">Sign Up</a>
-    </li>
-    <?php endif; ?>
-</ul>
-
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/reservations.php" class="nav-link">Reservations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/reports.php" class="nav-link">Contact Us</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= SITE_URL ?>/pages/guidebook.php" class="nav-link">Guidebook</a>
+                </li>
+            </ul>
+            
+            <!-- User Actions -->
+            <!-- ส่วนแสดงข้อมูลผู้ใช้ด้านขวาบน -->
             <div class="nav-auth">
                 <?php if (isLoggedIn()): ?>
+                    <!-- ถ้าล็อกอินแล้ว จะแสดงเมนู User (รูปโปรไฟล์, ชื่อ, Dropdown) -->
                     <div class="user-menu">
                         <button class="user-btn">
-                            <div class="user-avatar"><?= strtoupper(substr($_SESSION['username'], 0, 1)) ?></div>
+                            <div class="user-avatar">
+                                <?= strtoupper(substr($_SESSION['username'], 0, 1)) ?>
+                            </div>
                             <span><?= htmlspecialchars($_SESSION['username']) ?></span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </button>
                         <div class="user-dropdown">
-                            <div style="padding: 1rem; border-bottom: 1px solid rgba(0,0,0,0.1);">
-                                <small style="color: #6c757d;">Signed in as</small>
-                                <p style="font-weight: 600; color: #222;"><?= htmlspecialchars($_SESSION['username']) ?></p>
+                            <div style="padding: 1rem; border-bottom: 1px solid var(--gray-200);">
+                                <small style="color: var(--gray-500);">Signed in as</small>
+                                <p style="font-weight: 600;"><?= htmlspecialchars($_SESSION['username']) ?></p>
                             </div>
                             <div style="padding: 0.5rem;">
                                 <a href="<?= SITE_URL ?>/pages/reservations.php" class="dropdown-link">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                     My Bookings
                                 </a>
-                                <a href="<?= SITE_URL ?>/pages/profile.php" class="dropdown-link">
+                                 <a href="<?= SITE_URL ?>/pages/profile.php" class="dropdown-link">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                     My Profile
                                 </a>
-                                <a href="<?= SITE_URL ?>/pages/membership.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l3 6-9 12L3 9l3-6z"></path><path d="M3 9h18"></path><path d="M9 3l3 6 3-6"></path></svg>
-                                    Membership
-                                </a>
-                                <div style="border-top: 1px solid rgba(0,0,0,0.1); margin-top: 0.5rem; padding-top: 0.5rem;">
-                                    <a href="<?= SITE_URL ?>/api/auth.php?action=logout" class="dropdown-link" style="color: #dc3545;">
+                                    <a href="<?= SITE_URL ?>/pages/membership.php" class="dropdown-link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 3h12l3 6-9 12L3 9l3-6z"></path>
+                                            <path d="M3 9h18"></path>
+                                            <path d="M9 3l3 6 3-6"></path>
+                                        </svg>
+                                        Membership
+                                    </a>
+                                <div style="border-top: 1px solid var(--gray-200); margin-top: 0.5rem; padding-top: 0.5rem;">
+                                    <a href="<?= SITE_URL ?>/api/auth.php?action=logout" class="dropdown-link" style="color: var(--error);">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                                         Logout
                                     </a>
@@ -79,8 +91,10 @@ require_once 'config.php';
                             </div>
                         </div>
                     </div>
-               <?php else: ?>
-
+                <?php else: ?>
+                    <!-- ถ้ายังไม่ได้ล็อกอิน ก็แสดงปุ่ม Login/Sign Up ธรรมดา -->
+                    <a href="<?= SITE_URL ?>/pages/login.php" class="btn btn-ghost">Login</a>
+                    <a href="<?= SITE_URL ?>/pages/register.php" class="btn btn-primary">Sign Up</a>
                 <?php endif; ?>
             </div>
         </div>
