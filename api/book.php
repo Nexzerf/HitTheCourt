@@ -6,7 +6,7 @@ requireLogin();
 
 // ถ้าไม่ใช่การส่งข้อมูลแบบ POST (แอบพิมพ์ URL เข้ามาตรงๆ) ให้ดีดกลับไปหน้าเลือกสนาม
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/pages/courts.php');
+    redirect('/courts');
 }
 
 // 1. Get Data
@@ -187,6 +187,31 @@ try {
     // หากนำไปรันจริงจะต้องเพิ่มคำสั่ง INSERT INTO bookings ตรงนี้ก่อนครับ]
 
     // 5. Save Equipment & Update Stock
+    $bookingCode = generateBookingCode();
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO bookings (
+            user_id, court_id, slot_id, booking_date, booking_code, 
+            duration_minutes, court_price, equipment_total, discount_amount, total_price, 
+            payment_status, booking_status, expires_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'active', ?)
+    ");
+    
+    $stmt->execute([
+        $_SESSION['user_id'], 
+        $courtId, 
+        $slotId, 
+        $bookingDate, 
+        $bookingCode, 
+        $duration,
+        $courtPrice, 
+        $equipmentTotal, 
+        $discountAmount, 
+        $totalPrice,
+        $expiresAt
+    ]);
+    
+    $bookingId = $pdo->lastInsertId();
     // บันทึกรายการอุปกรณ์ที่เลือก และตัด Stock ออกจากคลังทันที
     foreach ($equipmentDetails as $item) {
         $stmt = $pdo->prepare("INSERT INTO booking_equipment (booking_id, eq_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)");
@@ -198,7 +223,7 @@ try {
     $pdo->commit();
 
     // พาผู้ใช้ไปหน้าชำระเงิน
-    redirect('/pages/pay_booking.php?id=' . $bookingId);
+    redirect('/pay_booking?id=' . $bookingId);
 
 } catch (Exception $e) {
     // ถ้ามี Error ตรงไหน ให้ยกเลิกการทำธุรกรรมทั้งหมด (Rollback)
