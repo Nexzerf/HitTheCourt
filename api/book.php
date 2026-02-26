@@ -1,23 +1,25 @@
+โอเครับ นี่คือโค้ดไฟล์ `booking_action.php` ที่มีคำอธิบายแทรกไว้ในทุกส่วนแล้วครับ เป็นภาษาที่เข้าใจง่าย เหมือนเพื่อนคุยกัน โดยไม่ได้ตัดโค้ดส่วนไหนออกเลย:
+
+```php
 <?php
-// ดึงเอาไฟล์ตั้งค่าหลัก (config.php) เข้ามาก่อน เพื่อเชื่อมฐานข้อมูลและใช้ฟังก์ชันต่างๆ
+// อันดับแรกเลย ดึงเอาไฟล์ตั้งค่าหลัก (config.php) เข้ามาก่อน เพื่อเชื่อมฐานข้อมูลและใช้ฟังก์ชันต่างๆ
 require_once '../config.php';
-// เช็คว่า "ล็อกอินแล้วหรือยัง?" ถ้ายังไม่ล็อกอินจะไม่ให้ทำต่อ
+// เช็คเลยว่า "ล็อกอินแล้วหรือยัง?" ถ้ายังไม่ล็อกอินจะไม่ให้ทำต่อ
 requireLogin();
 
-// ถ้าไม่ใช่การส่งข้อมูลแบบ POST (แอบพิมพ์ URL เข้ามาตรงๆ) ให้ดีดกลับไปหน้าเลือกสนาม
+// เช็ควิธีการเข้าหน้านี้: ถ้าไม่ใช่การกดส่งฟอร์ม (POST) แต่เข้ามาตรงๆ ก็ให้ดีดไปหน้าเลือกสนาม
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/courts');
 }
 
 // 1. Get Data
-// รับข้อมูลที่ส่งมาจากฟอร์มการจอง
+// รับข้อมูลที่ส่งมาจากฟอร์มการจอง (จากหน้าก่อนหน้านี้)
  $sportId = intval($_POST['sport_id'] ?? 0);
  $bookingDate = $_POST['booking_date'] ?? '';
  $slotCourt = $_POST['slot_court'] ?? ''; // ค่านี้จะเป็นรูปแบบ "courtId_slotId"
  $equipmentData = $_POST['equipment'] ?? []; // รายการอุปกรณ์ที่เลือกมา
 
-// Validation
-// เช็คเบื้องต้นว่าข้อมูลครบไหม ถ้าไม่ครบให้แจ้งเตือน
+// Validation: เช็คเบื้องต้นว่าข้อมูลครบไหม ถ้าไม่ครบให้แจ้งเตือนแล้วจบการทำงาน
 if (!$sportId || !$bookingDate || !$slotCourt) {
     die("Please select a time slot.");
 }
@@ -43,16 +45,17 @@ try {
     }
 
     // --- 1. CHECK ADVANCE BOOKING LIMIT ---
-    // เช็คว่าจองล่วงหน้าได้กี่วัน (สมาชิกจองได้ 7 วัน, คนทั่วไป 3 วัน)
+    // เช็คว่าจองล่วงหน้าได้กี่วัน (สมาชิกจองได้ไกลกว่าคนทั่วไป)
     $maxDays = $isPremium ? 7 : 3;
     $maxDate = date('Y-m-d', strtotime("+{$maxDays} days"));
     
+    // ถ้าวันที่จองเกินกว่าที่กำหนด ก็แจ้ง Error
     if ($bookingDate > $maxDate) {
         throw new Exception("Booking limit exceeded. You can only book up to {$maxDays} days in advance.");
     }
 
     // 2. Check Court Status
-    // เช็คว่าสนามที่เลือกมา สถานะเป็น 'available' จริงๆ ไหม
+    // เช็คว่าสนามที่เลือกมา สถานะเป็น 'available' จริงๆ ไหม หรือปิดปรับปรุงไปแล้ว
     $courtStmt = $pdo->prepare("SELECT status FROM courts WHERE court_id = ?");
     $courtStmt->execute([$courtId]);
     $courtData = $courtStmt->fetch();
@@ -95,7 +98,7 @@ try {
     // --- APPLY MEMBER DISCOUNTS ---
     // ถ้าเป็นสมาชิก Premium จะเริ่มมีสิทธิพิเศษลดราคา
     if ($isPremium) {
-        // A. Discount 30% on 1st & 16th: ลด 30% ถ้าจองวันที่ 1 หรือ 16 ของเดือน
+        // A. Discount 30% on 1st & 16th: ลด 30% ถ้าจองวันที่ 1 หรือ 16 ของเดือน (โปรโมชั่นพิเศษ)
         $dayOfMonth = date('j', strtotime($bookingDate));
         if ($dayOfMonth == 1 || $dayOfMonth == 16) {
             $discountAmt = $courtPrice * 0.30;
@@ -122,7 +125,7 @@ try {
     $equipmentDetails = [];
 
     // --- EQUIPMENT LOGIC (MEMBER FREE UNITS) ---
-    // ตาร้ายผังกำหนดว่า ถ้าเป็นสมาชิก อุปกรณ์แบบไหนได้ฟรีกี่ชิ้น
+    // ตาร้ายผังกำหนดว่า ถ้าเป็นสมาชิก อุปกรณ์แบบไหนได้ฟรีกี่ชิ้น (เช่น ไม้แบด 5 คู่ฟรี)
     $freeUnitsMap = [
         'badminton racket' => 5, 'badminton' => 5,
         'football' => 2,
@@ -146,7 +149,7 @@ try {
             $eq = $eqStmt->fetch();
 
             if (!$eq) continue;
-            // เช็คว่าของใน Stock พอไหม
+            // เช็คว่าของใน Stock พอไหม ถ้าไม่พอก็แจ้ง Error ทันที
             if ($qty > $eq['stock']) {
                 throw new Exception("Not enough stock for " . $eq['eq_name']);
             }
@@ -187,8 +190,11 @@ try {
     // หากนำไปรันจริงจะต้องเพิ่มคำสั่ง INSERT INTO bookings ตรงนี้ก่อนครับ]
 
     // 5. Save Equipment & Update Stock
+    // เตรียมบันทึกข้อมูลการจองลงฐานข้อมูล
     $bookingCode = generateBookingCode();
     
+    // สั่ง INSERT ข้อมูลการจอง โดยสถานะจะเป็น 'pending' (รอจ่ายเงิน) และตั้งเวลาหมดอายุการจอง (expires_at)
+    // หมายเหตุ: ตัวแปร $expiresAt ควรจะถูกกำหนดไว้ก่อนหน้านี้ (เช่น อีก 15 นาที) แต่ในโค้ดช่วงนี้ไม่เห็นการกำหนดค่า
     $stmt = $pdo->prepare("
         INSERT INTO bookings (
             user_id, court_id, slot_id, booking_date, booking_code, 
@@ -211,23 +217,28 @@ try {
         $expiresAt
     ]);
     
+    // ดึง ID ของการจองที่พึ่งสร้างขึ้นมา
     $bookingId = $pdo->lastInsertId();
-    // บันทึกรายการอุปกรณ์ที่เลือก และตัด Stock ออกจากคลังทันที
+    // บันทึกรายการอุปกรณ์ที่เลือก
     foreach ($equipmentDetails as $item) {
         $stmt = $pdo->prepare("INSERT INTO booking_equipment (booking_id, eq_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$bookingId, $item['id'], $item['qty'], $item['price'], $item['subtotal']]);
         
+        // หมายเหตุ: ตรงนี้ควรจะมีคำสั่ง UPDATE equipment SET stock = stock - ? เพื่อตัด Stock ออกจากระบบด้วยนะ
     }
 
     // ยืนยันการทำธุรกรรมทั้งหมด (Commit)
+    // เมื่อมาถึงตรงนี้ได้แสดงว่าผ่านเงื่อนไขทั้งหมดแล้ว ก็ให้บันทึกข้อมูลลงไปจริง
     $pdo->commit();
 
-    // พาผู้ใช้ไปหน้าชำระเงิน
+    // พาผู้ใช้ไปหน้าชำระเงิน พร้อมส่ง ID การจองไปด้วย
     redirect('/pay_booking?id=' . $bookingId);
 
 } catch (Exception $e) {
     // ถ้ามี Error ตรงไหน ให้ยกเลิกการทำธุรกรรมทั้งหมด (Rollback)
+    // เพื่อป้องกันข้อมูลเหลือค้างอยู่ (เช่น จองสนามสำเร็จแต่จองอุปกรณ์พัง ก็ต้องยกเลิกทั้งคู่)
     $pdo->rollBack();
     die("Booking failed: " . $e->getMessage());
 }
 ?>
+```
