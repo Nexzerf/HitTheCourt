@@ -1,4 +1,5 @@
 <?php
+// ดึงเอาไฟล์ตั้งค่าหลัก (config.php) เข้ามาก่อนเลย เพื่อเชื่อมฐานข้อมูลและใช้ฟังก์ชันต่างๆ
 require_once 'config.php';
 ?>
 <!DOCTYPE html>
@@ -7,21 +8,27 @@ require_once 'config.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hit The Court - Sport Club</title>
+    <!-- โหลด Font สวยๆ จาก Google Fonts มาใช้ในเว็บ -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- เรียกไฟล์ CSS หลักมาแต่งหน้าตาเว็บ -->
     <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/index.css">
+    <!-- ใส่ไอคอนเล็กๆ บนแท็บบราวเซอร์ (Favicon) -->
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png">
 </head>
 <body>
 
 <!-- ===================== NAVBAR ===================== -->
+<!-- ส่วนของเมนูด้านบนของเว็บ -->
 <nav class="navbar-home" id="navbar">
     <div class="navbar-container">
 
+        <!-- โลโก้ชื่อเว็บ -->
         <a href="/" class="navbar-logo">HIT THE <span>COURT</span></a>
 
+        <!-- ปุ่มเมนูสำหรับมือถือ (Hamburger) กดแล้วเมนูจะโผล่ -->
         <button class="mobile-toggle" aria-label="Toggle menu">
             <div class="hamburger-box">
                 <span class="bar"></span>
@@ -30,6 +37,7 @@ require_once 'config.php';
             </div>
         </button>
 
+        <!-- เมนูหลักของเว็บ (Courts, Reservations, ฯลฯ) -->
         <ul class="nav-menu">
             <li class="nav-item"><a href="/courts"       class="nav-link">Courts</a></li>
             <li class="nav-item"><a href="/reservations" class="nav-link">Reservations</a></li>
@@ -37,14 +45,18 @@ require_once 'config.php';
             <li class="nav-item"><a href="/guidebook"    class="nav-link">Guidebook</a></li>
         </ul>
 
+        <!-- ส่วนขวาสุดของเมนู: ตรวจสอบการล็อกอิน -->
         <div class="nav-auth">
             <?php if (isLoggedIn()): ?>
+                <!-- ถ้าล็อกอินแล้ว: แสดงรูป Avatar ชื่อ User และเมนูดรอปดาวน์ -->
                 <div class="user-menu">
                     <button class="user-btn">
+                        <!-- ดึงอักษรตัวแรกของชื่อมาทำเป็น Avatar -->
                         <div class="user-avatar"><?= strtoupper(substr($_SESSION['username'], 0, 1)) ?></div>
                         <span><?= htmlspecialchars($_SESSION['username']) ?></span>
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
+                    <!-- เมนูย่อยเวลากดที่ชื่อ (My Bookings, Profile, Membership, Logout) -->
                     <div class="user-dropdown">
                         <a href="/reservations" class="dropdown-link">
                             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -65,6 +77,7 @@ require_once 'config.php';
                     </div>
                 </div>
             <?php else: ?>
+                <!-- ถ้ายังไม่ได้ล็อกอิน: แสดงปุ่ม Login และ Sign Up -->
                 <a href="/login"    class="btn btn-ghost">Login</a>
                 <a href="/register" class="btn btn-dark">Sign Up</a>
             <?php endif; ?>
@@ -74,17 +87,21 @@ require_once 'config.php';
 </nav>
 
 <!-- ===================== HERO ===================== -->
+<!-- ส่วนแบนเนอร์ใหญ่สุด (Hero Section) -->
 <section class="hero">
     <!-- Replace src with your actual hero image -->
+    <!-- รูปภาพพื้นหลัง (จะไปถูกกำหนดใน CSS) -->
 
 
     <!-- Title top-left -->
+    <!-- ชื่อใหญ่และคำบรรยายสั้นๆ -->
     <div class="hero-title-wrap">
         <h1 class="hero-title">HIT THE <span>COURT</span></h1>
         <p class="hero-subtitle">Play your best. The smartest way to find, book,<br>and manage your favorite sports courts.</p>
     </div>
 
     <!-- Book button bottom-left -->
+    <!-- ปุ่มกดจองสนามหลัก -->
     <div class="hero-content">
         <div class="hero-buttons">
             <a href="<?= SITE_URL ?>/courts" class="btn btn-primary" style="padding:0.875rem 2rem; font-size:0.95rem;">
@@ -96,10 +113,12 @@ require_once 'config.php';
 </section>
 
 <!-- ===================== ABOUT ===================== -->
+<!-- ส่วนแนะนำเกี่ยวกับเรา (About Us) -->
 <section id="about">
     <div class="container" style="padding: 0 2rem;">
         <div class="about-card">
             <!-- Logo circle -->
+            <!-- แสดงโลโก้ในวงกลม (ถ้าโหลดรูปไม่ขึ้นจะโชว์ตัวหนังสือแทน) -->
             <div class="about-logo-wrap">
                 <img src="/images/logo.png"
                      alt="Hit The Court Logo"
@@ -107,6 +126,7 @@ require_once 'config.php';
             </div>
 
             <!-- Text body -->
+            <!-- เนื้อหาบรรยายเกี่ยวกับสโมสร -->
             <div class="about-body">
                 <h2>About Us</h2>
                 <p>
@@ -125,14 +145,17 @@ require_once 'config.php';
 </section>
 
 <!-- ===================== SERVICES ===================== -->
+<!-- ส่วนบริการของเรา -->
 <section id="services">
     <div class="container">
         <div class="section-header">
             <span class="section-eyebrow">Service</span>
             <h2>Our Service</h2>
         </div>
+        <!-- แสดงบริการเป็นการ์ดๆ -->
         <div class="services-grid">
 
+            <!-- การ์ดบริการที่ 1: สนามกีฬา -->
             <div class="service-card">
                 <div class="service-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -148,6 +171,7 @@ require_once 'config.php';
                 <p class="service-text">A wide variety of sports courts built to standard specifications, safe and ready for all levels of play.</p>
             </div>
 
+            <!-- การ์ดบริการที่ 2: อาหารและเครื่องดื่ม -->
             <div class="service-card">
                 <div class="service-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -162,6 +186,7 @@ require_once 'config.php';
                 <p class="service-text">Snacks and drinks available to keep you energized before, during, and after the game.</p>
             </div>
 
+            <!-- การ์ดบริการที่ 3: บริการเช่าอุปกรณ์ -->
             <div class="service-card">
                 <div class="service-icon">
                     <!-- Badminton racket + shuttle -->
@@ -182,11 +207,13 @@ require_once 'config.php';
 </section>
 
 <!-- ===================== WHY US ===================== -->
+<!-- ส่วนที่บอกว่าทำไมต้องเลือกเรา -->
 <section id="why-us">
     <div class="container">
         <div class="why-us-grid">
 
             <!-- Left: image -->
+            <!-- รูปภาพประกอบด้านซ้าย -->
             <div class="why-us-image-wrap">
                 <img src="/images/why-us.png"
                      alt="Hit The Court"
@@ -194,6 +221,7 @@ require_once 'config.php';
             </div>
 
             <!-- Right: accordion -->
+            <!-- เนื้อหาและเมนูแบบ Accordion (กดเปิดปิด) -->
             <div class="why-us-content">
                 <h2>Why Us?</h2>
                 <p>
@@ -204,6 +232,7 @@ require_once 'config.php';
 
                 <div class="accordion">
 
+                    <!-- Accordion ที่ 1: เวลาทำการ -->
                     <div class="accordion-item">
                         <div class="accordion-header">
                             Opening Hours
@@ -220,6 +249,7 @@ require_once 'config.php';
                         </div>
                     </div>
 
+                    <!-- Accordion ที่ 2: สิ่งอำนวยความสะดวก -->
                     <div class="accordion-item">
                         <div class="accordion-header">
                             Full Facilities
@@ -238,6 +268,7 @@ require_once 'config.php';
                         </div>
                     </div>
 
+                    <!-- Accordion ที่ 3: สิทธิประโยชน์สมาชิก -->
                     <div class="accordion-item">
                         <div class="accordion-header">
                             Member Benefits
@@ -262,12 +293,14 @@ require_once 'config.php';
 </section>
 
 <!-- ===================== FACILITIES ===================== -->
+<!-- ส่วนสถิติและสิ่งอำนวยความสะดวก (แสดงเป็นไอคอน) -->
 <section class="facilities-section">
     <div class="container">
         <h2>Full Facilities &amp; Member Benefit</h2>
         <p class="sub">Everything you need, all in one place</p>
 
         <!-- Row 1: 3 items -->
+        <!-- แถวแรก: 3 ไอเท็ม (สนาม, ห้องน้ำ, ที่จอดรถ) -->
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-icon">
@@ -301,6 +334,7 @@ require_once 'config.php';
         </div>
 
         <!-- Row 2: 2 items centered -->
+        <!-- แถวสอง: 2 ไอเท็ม (เครื่อง AED, กล้องวงจรปิด) -->
         <div class="stats-grid-row2">
             <div class="stat-item">
                 <div class="stat-icon">
@@ -327,10 +361,12 @@ require_once 'config.php';
 </section>
 
 <!-- ===================== FOOTER ===================== -->
+<!-- ส่วนท้ายเว็บไซต์ -->
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
 
+            <!-- คอลัมน์ที่ 1: โลโก้และชื่อ -->
             <div>
                 <div class="footer-brand">
                     <div class="footer-logo-icon">
@@ -345,6 +381,7 @@ require_once 'config.php';
                 </p>
             </div>
 
+            <!-- คอลัมน์ที่ 2: ลิงก์เมนูด้านล่าง -->
             <div class="footer-links">
                 <h4>Menu</h4>
                 <ul>
@@ -355,6 +392,7 @@ require_once 'config.php';
                 </ul>
             </div>
 
+            <!-- คอลัมน์ที่ 3: ข้อมูลติดต่อ -->
             <div class="footer-links">
                 <h4>Contact Us</h4>
                 <ul>
@@ -381,6 +419,7 @@ require_once 'config.php';
 </footer>
 
 <!-- ===================== SCRIPTS ===================== -->
+<!-- ส่วนของ Javascript ควบคุมการทำงานต่างๆ -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const navbar    = document.getElementById('navbar');
@@ -389,20 +428,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const body      = document.body;
 
     /* Scroll shadow */
+    // เวลาเลื่อนหน้าจอลงมา ให้เมนูมีเงา (เพิ่ม class 'scrolled')
     window.addEventListener('scroll', () => {
         navbar.classList.toggle('scrolled', window.scrollY > 30);
     });
 
     /* Hamburger */
+    // จัดการปุ่มเมนูมือถือ (กดเปิด/ปิด)
     if (toggleBtn) {
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             navbar.classList.toggle('menu-open');
+            // เวลาเมนูเปิด ให้ล็อค scroll ตัว body ไม่ให้เลื่อน
             body.style.overflow = navbar.classList.contains('menu-open') ? 'hidden' : '';
         });
     }
 
     /* User dropdown on mobile */
+    // จัดการเมนู User บนมือถือ (กดที่ Avatar แล้วเมนูจะโผล่)
     if (userMenu) {
         userMenu.querySelector('.user-btn').addEventListener('click', (e) => {
             if (window.innerWidth <= 768) {
@@ -413,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* Click outside → close */
+    // เวลากดพื้นที่นอกเมนู ให้ปิดเมนูทั้งหมด
     document.addEventListener('click', (e) => {
         if (navbar?.classList.contains('menu-open') && !navbar.contains(e.target)) {
             navbar.classList.remove('menu-open');
@@ -424,15 +468,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* ── Accordion ── */
+    // จัดการ Accordion (เวลากดหัวข้อ ให้เนื้อหาเลื่อนลงมา)
     document.querySelectorAll('.accordion-header').forEach(header => {
         header.addEventListener('click', () => {
             const item = header.parentElement;
             const isOpen = item.classList.contains('open');
 
             // Close all
+            // ปิดทุกอันก่อน
             document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
 
             // Toggle clicked
+            // ถ้าอันที่กดมันยังไม่เปิด ก็ให้เปิดมัน
             if (!isOpen) item.classList.add('open');
         });
     });
